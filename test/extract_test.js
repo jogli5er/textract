@@ -68,7 +68,6 @@ describe( 'textract', function() {
         done();
       });
     });
-
   });
 
   describe( 'for .rss files', function() {
@@ -90,6 +89,32 @@ describe( 'textract', function() {
         expect( text ).to.be.an( 'string' );
         expect( text.length ).to.eql( 5534 );
         expect( text.substring( 0, 100 ) ).to.eql( '\n FeedForAll Sample Feed\n RSS is a fascinating technology. The uses for RSS are expanding daily. Tak' );
+        done();
+      });
+    });
+  });
+
+  describe( 'for .epub files', function() {
+    it( 'will extract text from epub files', function( done ) {
+      var docPath = path.join( __dirname, 'files', 'Metamorphosis-jackson.epub' );
+      this.timeout( 5000 );
+      fromFileWithPath( docPath, function( error, text ) {
+        expect( error ).to.be.null;
+        expect( text ).to.be.an( 'string' );
+        expect( text.length ).to.eql( 119329 );
+        expect( text.substring( 3000, 3500 ) ).to.eql( "dboard so that he could lift his head better; found where the itch was, and saw that it was covered with lots of little white spots which he didn't know what to make of; and when he tried to feel the place with one of his legs he drew it quickly back because as soon as he touched it he was overcome by a cold shudder. He slid back into his former position. \"Getting up early all the time\", he thought, \"it makes you stupid. You've got to get enough sleep. Other travelling salesmen live a life of lu" );
+        done();
+      });
+    });
+
+    it( 'will extract text from epub files and preserve line breaks', function( done ) {
+      var docPath = path.join( __dirname, 'files', 'Metamorphosis-jackson.epub' );
+      this.timeout( 5000 );
+      fromFileWithPath( docPath, { preserveLineBreaks: true }, function( error, text ) {
+        expect( error ).to.be.null;
+        expect( text ).to.be.an( 'string' );
+        expect( text.length ).to.eql( 119342 );
+        expect( text.substring( 3000, 3500 ) ).to.eql( "rds the headboard so that he could lift his head better; found where the itch was, and saw that it was covered with lots of little white spots which he didn't know what to make of; and when he tried to feel the place with one of his legs he drew it quickly back because as soon as he touched it he was overcome by a cold shudder.\nHe slid back into his former position. \"Getting up early all the time\", he thought, \"it makes you stupid. You've got to get enough sleep. Other travelling salesmen live a" );
         done();
       });
     });
@@ -330,6 +355,26 @@ describe( 'textract', function() {
         done();
       });
     });
+
+    it( 'can handle manage PDFS with full-width Japanese characters', function( done ) {
+      var filePath = path.join( __dirname, 'files', 'full-width-j.pdf' );
+      fromFileWithPath( filePath, function( error, text ) {
+        expect( error ).to.be.null;
+        expect( text ).to.be.a( 'string' );
+        expect( text.replace( / /g, '' ).substring( 2685, 2900 ) ).to.eql( '＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～｟｠｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟﾡﾢﾣﾤﾥﾦﾧﾨﾩﾪﾫﾬﾭﾮﾯﾰﾱﾲﾳﾴﾵﾶﾷﾸﾹﾺﾻﾼﾽﾾￂￃￄￅￆￇￊￋￌￍￎￏￒￓￔￕￖￗￚￛￜ￠￡￢￣￤￥￦F' );
+        done();
+      });
+    });
+
+    // it( 'can handle arabic', function( done ) {
+    //   var filePath = path.join( __dirname, 'files', 'arabic.pdf' );
+    //   fromFileWithPath( filePath, function( error, text ) {
+    //     expect( error ).to.be.null;
+    //     expect( text ).to.be.a( 'string' );
+    //     expect( text.substring( 0, 200 ) ).to.eql( '' );
+    //     done();
+    //   });
+    // });
   });
 
   describe( 'for .docx files', function() {
@@ -403,6 +448,16 @@ describe( 'textract', function() {
         done();
       });
     });
+
+    it( 'can handle arabic', function( done ) {
+      var filePath = path.join( __dirname, 'files', 'arabic.docx' );
+      fromFileWithPath( filePath, function( error, text ) {
+        expect( error ).to.be.null;
+        expect( text ).to.be.a( 'string' );
+        expect( text.substring( 0, 100 ) ).to.eql( ' التعرف الضوئي على الحروف إشعار عدم التمييز (المصدر: مكتب الصحة والخدمات الإنسانية من أجل الحقوق الم' );
+        done();
+      });
+    });
   });
 
   describe( 'for text/* files', function() {
@@ -422,6 +477,16 @@ describe( 'textract', function() {
         expect( error ).to.be.null;
         expect( text ).to.be.a( 'string' );
         expect( text ).to.eql( 'これは非UTF8 テキストファイルです ' );
+        done();
+      });
+    });
+
+    it( 'will error when .txt file encoding cannot be detected', function( done ) {
+      var filePath = path.join( __dirname, 'files', 'unknown-encoding.txt' );
+      fromFileWithPath( filePath, function( error ) {
+        expect( error ).to.be.an( 'object' );
+        expect( error.message ).to.be.a( 'string' );
+        expect( error.message ).to.eql( 'Could not detect encoding for file named [[ unknown-encoding.txt ]]' );
         done();
       });
     });
@@ -501,6 +566,16 @@ describe( 'textract', function() {
       });
     });
 
+    it( 'will extract text PPTX files with notes', function( done ) {
+      var filePath = path.join( __dirname, 'files', 'PrezoWithNotes.pptx' );
+      fromFileWithPath( filePath, function( error, text ) {
+        expect( error ).to.be.null;
+        expect( text ).to.be.an( 'string' );
+        expect( text).to.eql( 'This is a slide These are speaker notes 1 ' );
+        done();
+      });
+    });
+
     it( 'will extract slides in the right order', function( done ) {
       var filePath = path.join( __dirname, 'files', 'order.pptx' );
       fromFileWithPath( filePath, { preserveLineBreaks: true }, function( error, text ) {
@@ -535,6 +610,18 @@ describe( 'textract', function() {
         expect( error ).to.be.null;
         expect( text ).to.be.an( 'string' );
         expect( text.indexOf( '…' ) ).to.eql( 928 );
+        done();
+      });
+    });
+  });
+
+  describe( 'for odt files', function() {
+    it( 'will extract text from ODT files', function( done ) {
+      var filePath = path.join( __dirname, 'files', 'spaced.odt' );
+      fromFileWithPath( filePath, function( error, text ) {
+        expect( error ).to.be.null;
+        expect( text ).to.be.an( 'string' );
+        expect( text ).to.eql( 'This Is some text' );
         done();
       });
     });
@@ -665,8 +752,8 @@ describe( 'textract', function() {
   test(
     'ott',
     'ott.ott',
-    'This is a document template, yay templates! Woo templates get me so excited! Woo templates get me so',
-    'This is a document template, yay templates!\nWoo templates get me so excited!\nWoo templates get me so'
+    'This is a document template, yay templates! Woo templates get me so excited!',
+    'This is a document template, yay templates!\nWoo templates get me so excited!'
   );
 
   test(
